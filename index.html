@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triratna Buddhist Dhamma School - Result Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 50px 50px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 550px;
+      text-align: center;
+    }
+   .school-name {
+      font-size: 2em;
+      color: #e67e22;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+<div class="school-name"> Triratna Bhuddhist Dhamma School </div>
+    <h2>Student Result Portal</h2>
+
+    <form id="resultForm">
+      <label>Year</label>
+      <input type="number" id="year" required placeholder="e.g. 2025" />
+
+      <label>Class</label>
+      <select id="class" required>
+        <option value="">Select</option>
+        <option>Class 1</option>
+        <option>Class 2</option>
+        <option>Class 3</option>
+        <option>Class 4</option>
+        <option>Class 5</option>
+        <option>Class 6</option>
+        <option>Class 7</option>
+        <option>Class 8</option>
+        <option>Class 9</option>
+        <option>Class 10</option>
+      </select>
+
+      <label>Roll</label>
+      <input type="number" id="roll" required placeholder="Roll number" />
+
+      <label>Registration Number</label>
+      <input type="text" id="regNo" required placeholder="Enter registration no." />
+
+      <div>
+        <label>Captcha: </label><br>
+        <span id="captchaText" style="font-weight:bold;font-size:18px;"></span>
+        <button type="button" id="refreshCaptcha" style="background:#6c757d;margin-top:5px;">↻</button>
+      </div>
+
+      <input type="text" id="captchaInput" placeholder="Enter captcha" required />
+
+      <button type="submit">Show Result</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // Captcha Generator
+    function generateCaptcha() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let captcha = "";
+      for (let i = 0; i < 5; i++) captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+      document.getElementById("captchaText").innerText = captcha;
+      return captcha;
+    }
+
+    let captchaCode = generateCaptcha();
+    document.getElementById("refreshCaptcha").addEventListener("click", () => {
+      captchaCode = generateCaptcha();
+    });
+
+    // Form submission
+    document.getElementById("resultForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const captchaInput = document.getElementById("captchaInput").value.trim().toUpperCase();
+
+      if (captchaInput !== captchaCode) {
+        alert("Captcha does not match! Try again.");
+        captchaCode = generateCaptcha();
+        return;
+      }
+
+      const year = document.getElementById("year").value;
+      const cls = document.getElementById("class").value;
+      const roll = document.getElementById("roll").value;
+      const regNo = document.getElementById("regNo").value;
+
+      document.getElementById("result").innerHTML = "Searching result...";
+
+      // === Step 2: Connect to Google Sheet or API ===
+      // Replace the URL below with your Google Apps Script Web App URL:
+      const scriptURL = "YOUR_GOOGLE_APPS_SCRIPT_WEBAPP_URL";
+
+      try {
+        const response = await fetch(scriptURL + `?year=${year}&class=${cls}&roll=${roll}&reg=${regNo}`);
+        const data = await response.json();
+        if (data.status === "success") {
+          document.getElementById("result").innerHTML = `
+            <h3>Result Found</h3>
+            <p>Name: ${data.name}</p>
+            <p>Total Marks: ${data.marks}</p>
+            <p>Grade: ${data.grade}</p>
+          `;
+        } else {
+          document.getElementById("result").innerHTML = "No result found!";
+        }
+      } catch (err) {
+        document.getElementById("result").innerHTML = "Error fetching result.";
+      }
+    });
+  </script>
+</body>
+</html>
